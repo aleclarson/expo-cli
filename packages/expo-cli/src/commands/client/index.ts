@@ -19,6 +19,7 @@ import generateBundleIdentifier from './generateBundleIdentifier';
 import { SetupIosDist } from '../../credentials/views/SetupIosDist';
 import { SetupIosPush } from '../../credentials/views/SetupIosPush';
 import { Context } from '../../credentials/context';
+import { getAppLookupParams } from '../../credentials/api/IosApi';
 import { CreateIosDist } from '../../credentials/views/IosDistCert';
 import { CreateOrReuseProvisioningProfileAdhoc } from '../../credentials/views/IosProvisioningProfileAdhoc';
 import { runCredentialsManager } from '../../credentials/route';
@@ -86,7 +87,7 @@ export default function (program: Command) {
         await context.ensureAppleCtx(options);
         const appleContext = context.appleCtx;
         if (user) {
-          await context.ios.getAllCredentials(); // initialize credentials
+          await context.ios.getAllCredentials(user.username); // initialize credentials
         }
 
         // check if any builds are in flight
@@ -104,12 +105,11 @@ export default function (program: Command) {
 
         const bundleIdentifier = generateBundleIdentifier(appleContext.team.id);
         const experienceName = await getExperienceName({ user, appleTeamId: appleContext.team.id });
+        const appLookupParams = getAppLookupParams(experienceName, bundleIdentifier);
 
-        await appleApi.ensureAppExists(
-          appleContext,
-          { bundleIdentifier, experienceName },
-          { enablePushNotifications: true }
-        );
+        await appleApi.ensureAppExists(appleContext, appLookupParams, {
+          enablePushNotifications: true,
+        });
 
         const { devices } = await runAction(travelingFastlane.listDevices, [
           '--all-ios-profile-devices',
@@ -121,13 +121,12 @@ export default function (program: Command) {
 
         let distributionCert;
         if (user) {
-          await runCredentialsManager(
-            context,
-            new SetupIosDist({ experienceName, bundleIdentifier })
-          );
-          distributionCert = await context.ios.getDistCert(experienceName, bundleIdentifier);
+          await runCredentialsManager(context, new SetupIosDist(appLookupParams));
+          distributionCert = await context.ios.getDistCert(appLookupParams);
         } else {
-          distributionCert = await new CreateIosDist().provideOrGenerate(context);
+          distributionCert = await new CreateIosDist(appLookupParams.accountName).provideOrGenerate(
+            context
+          );
         }
         if (!distributionCert) {
           throw new CommandError(
@@ -138,26 +137,18 @@ export default function (program: Command) {
 
         let pushKey;
         if (user) {
-          await runCredentialsManager(
-            context,
-            new SetupIosPush({ experienceName, bundleIdentifier })
-          );
-          pushKey = await context.ios.getPushKey(experienceName, bundleIdentifier);
+          await runCredentialsManager(context, new SetupIosPush(appLookupParams));
+          pushKey = await context.ios.getPushKey(appLookupParams);
         }
 
         let provisioningProfile;
-        const createOrReuseProfile = new CreateOrReuseProvisioningProfileAdhoc({
-          experienceName,
-          bundleIdentifier,
+        const createOrReuseProfile = new CreateOrReuseProvisioningProfileAdhoc(appLookupParams, {
           distCertSerialNumber: distributionCert.distCertSerialNumber!,
           udids,
         });
         if (user) {
           await runCredentialsManager(context, createOrReuseProfile);
-          provisioningProfile = await context.ios.getProvisioningProfile(
-            experienceName,
-            bundleIdentifier
-          );
+          provisioningProfile = await context.ios.getProvisioningProfile(appLookupParams);
         } else {
           provisioningProfile = await createOrReuseProfile.createOrReuse(context);
         }

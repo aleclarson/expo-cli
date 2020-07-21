@@ -1,5 +1,6 @@
 import {
   getCtxMock,
+  testAppLookupParams,
   testIosDistCredential,
   testProvisioningProfiles,
   testProvisioningProfilesFromApple,
@@ -41,14 +42,12 @@ beforeEach(() => {
 
 describe('SetupProvisioningProfile', () => {
   it('Basic Case - Create or Reuse', async () => {
-    const ctx = getCtxMock();
-    const provProfOptions = {
-      experienceName: 'testApp',
-      bundleIdentifier: 'test.com.app',
-      distCert: testIosDistCredential as IosDistCredentials,
-      nonInteractive: true,
-    };
-    const setupProvisioningProfile = new SetupIosProvisioningProfile(provProfOptions);
+    const ctx = getCtxMock({
+      ios: {
+        getProvisioningProfile: jest.fn(),
+      },
+    });
+    const setupProvisioningProfile = new SetupIosProvisioningProfile(testAppLookupParams, true);
     const createOrReuse = await setupProvisioningProfile.open(ctx as any);
     await createOrReuse.open(ctx as any);
 

@@ -13,21 +13,19 @@ import {
   IosDistCredentials,
   IosPushCredentials,
 } from '../credentials';
+import { AppLookupParams } from '../api/IosApi';
 
 import log from '../../log';
 
-export async function displayProjectCredentials(
-  experienceName: string,
-  bundleIdentifier: string,
-  credentials: IosCredentials
-): Promise<void> {
-  const appCredential = credentials.appCredentials.find(
-    appCredential =>
-      appCredential.experienceName === experienceName &&
-      appCredential.bundleIdentifier === bundleIdentifier
-  );
-
-  if (!appCredential) {
+export function displayProjectCredentials(
+  appLookupParams: AppLookupParams,
+  appCredentials?: IosAppCredentials | null,
+  pushKey?: IosPushCredentials | null,
+  distCert?: IosDistCredentials | null
+): void {
+  const experienceName = `@${appLookupParams.accountName}/${appLookupParams.projectName}`;
+  const bundleIdentifier = appLookupParams.bundleIdentifier;
+  if (!appCredentials) {
     log(
       chalk.bold(
         `No credentials configured for app ${experienceName} with bundle identifier ${bundleIdentifier}\n`
@@ -38,21 +36,15 @@ export async function displayProjectCredentials(
 
   log();
   log(chalk.bold('Project Credential Configuration:'));
-  displayIosAppCredentials(appCredential);
+  displayIosAppCredentials(appCredentials);
   log();
 
-  const distCertId = appCredential.distCredentialsId;
-  const distCert =
-    distCertId && credentials.userCredentials.find(credential => credential.id === distCertId);
   if (distCert) {
-    displayIosUserCredentials(distCert, credentials);
+    displayIosUserCredentials(distCert);
   }
 
-  const pushKeyId = appCredential.pushCredentialsId;
-  const pushKey =
-    pushKeyId && credentials.userCredentials.find(credential => credential.id === pushKeyId);
   if (pushKey) {
-    displayIosUserCredentials(pushKey, credentials);
+    displayIosUserCredentials(pushKey);
   }
 }
 

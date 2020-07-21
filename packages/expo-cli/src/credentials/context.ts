@@ -2,8 +2,8 @@ import { ExpoConfig, getConfig } from '@expo/config';
 import { ApiV2, Doctor, User, UserManager } from '@expo/xdl';
 
 import { AppleCtx, authenticate } from '../appleApi';
-import { AndroidApi } from './api/android';
-import { IosApi } from './api/ios';
+import AndroidApi from './api/AndroidApi';
+import IosApi from './api/IosApi';
 import log from '../log';
 
 export interface IView {
@@ -90,6 +90,7 @@ export class Context {
       this._user = await UserManager.ensureLoggedInAsync();
     }
     this._projectDir = projectDir;
+    this._apiClient = ApiV2.clientForUser(this.user);
 
     // Check if we are in project context by looking for a manifest
     const status = await Doctor.validateWithoutNetworkAsync(projectDir);
@@ -97,15 +98,13 @@ export class Context {
       const { exp } = getConfig(projectDir);
       this._manifest = exp;
       this._hasProjectContext = true;
-      this._iosApiClient = new IosApi(this.user).withProjectContext(this);
-      this._androidApiClient = new AndroidApi(this.user);
+      this._iosApiClient = new IosApi(this.api);
+      this._androidApiClient = new AndroidApi(this.api);
       this.logOwnerAndProject();
     } else {
       /* This manager does not need to work in project context */
-      this._iosApiClient = new IosApi(this.user);
-      this._androidApiClient = new AndroidApi(this.user);
+      this._iosApiClient = new IosApi(this.api);
+      this._androidApiClient = new AndroidApi(this.api);
     }
-
-    this._apiClient = ApiV2.clientForUser(this.user);
   }
 }

@@ -5,7 +5,6 @@ import { Context } from '../context';
 import { credentialsJson } from '../local';
 import { CredentialsProvider } from './provider';
 import { CredentialsSource } from '../../easJson';
-import log from '../../log';
 
 export interface AndroidCredentials {
   keystore: Keystore;
@@ -63,7 +62,6 @@ export default class AndroidCredentialsProvider implements CredentialsProvider {
         r.keyPassword === l.keyPassword &&
         this.isValidKeystore(r)
       );
-      return true;
     } catch (_) {
       return false;
     }

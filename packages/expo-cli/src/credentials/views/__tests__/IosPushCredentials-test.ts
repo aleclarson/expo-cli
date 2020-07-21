@@ -1,6 +1,8 @@
 import { CreateIosPush, CreateOrReusePushKey } from '../IosPushCredentials';
 import {
   getCtxMock,
+  jester,
+  testAppLookupParams,
   testIosPushCredential,
   testPushKeysFromApple,
 } from '../../test-fixtures/mocks-ios';
@@ -41,7 +43,7 @@ describe('IosPushCredentials', () => {
       const cliOptions = {
         nonInteractive: true,
       };
-      const createIosPush = new CreateIosPush(cliOptions);
+      const createIosPush = new CreateIosPush(jester.username, true);
       await createIosPush.open(ctx as any);
 
       // expect push key is created
@@ -54,12 +56,7 @@ describe('IosPushCredentials', () => {
   describe('CreateOrReusePushKey', () => {
     it('Reuse Autosuggested Push Key ', async () => {
       const ctx = getCtxMock();
-      const pushKeyOptions = {
-        experienceName: 'testApp',
-        bundleIdentifier: 'test.com.app',
-        nonInteractive: true,
-      };
-      const createOrReusePushKey = new CreateOrReusePushKey(pushKeyOptions);
+      const createOrReusePushKey = new CreateOrReusePushKey(testAppLookupParams, true);
       await createOrReusePushKey.open(ctx as any);
 
       // expect suggested push key is used
@@ -76,12 +73,7 @@ describe('IosPushCredentials', () => {
       mockPushKeyManagerList.mockImplementation(() => [] as any);
 
       const ctx = getCtxMock();
-      const pushKeyOptions = {
-        experienceName: 'testApp',
-        bundleIdentifier: 'test.com.app',
-        nonInteractive: true,
-      };
-      const createOrReusePushKey = new CreateOrReusePushKey(pushKeyOptions);
+      const createOrReusePushKey = new CreateOrReusePushKey(testAppLookupParams, true);
       await createOrReusePushKey.open(ctx as any);
 
       // expect suggested push key is used
