@@ -17,7 +17,8 @@ import { UploadType, uploadAsync } from '../../uploads';
 import { createProgressTracker } from '../utils/progress';
 
 export interface BuildInfo {
-  status: string;
+  id: string;
+  status: 'in-queue' | 'in-progress' | 'errored' | 'finished';
   platform: Platform;
   createdAt: string;
   artifacts?: BuildArtifacts;
