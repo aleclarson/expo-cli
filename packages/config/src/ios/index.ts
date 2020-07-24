@@ -13,6 +13,7 @@ import * as Facebook from './Facebook';
 import * as Google from './Google';
 import * as Orientation from './Orientation';
 import * as Updates from './Updates';
+import * as ProvisioningProfile from './ProvisioningProfile';
 
 // Placeholders
 import * as Icons from './Icons';
@@ -38,6 +39,7 @@ export {
   InfoPlist,
   Name,
   Orientation,
+  ProvisioningProfile,
   RequiresFullScreen,
   Scheme,
   Updates,

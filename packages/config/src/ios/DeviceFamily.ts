@@ -1,7 +1,4 @@
-import fs from 'fs-extra';
-
 import { ExpoConfig } from '../Config.types';
-import { getPbxproj, isBuildConfig, removeComments, removeTestHosts } from './utils/Xcodeproj';
 import { addWarningIOS } from '../WarningAggregator';
 
 export function getSupportsTablet(config: ExpoConfig) {
