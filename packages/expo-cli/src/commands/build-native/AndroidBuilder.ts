@@ -1,18 +1,14 @@
 import { Android, BuildType, Job, Platform, sanitizeJob } from '@expo/build-tools';
 
-import { Keystore } from '../../credentials/credentials';
 import AndroidCredentialsProvider, {
   AndroidCredentials,
 } from '../../credentials/provider/AndroidCredentialsProvider';
-import { credentialsJson } from '../../credentials/local';
 import { ensureCredentialsAsync } from './credentials';
-import prompt from '../../prompts';
 import { Builder, BuilderContext } from './build';
 import {
   AndroidBuildProfile,
   AndroidGenericBuildProfile,
   AndroidManagedBuildProfile,
-  CredentialsSource,
   Workflow,
 } from '../../easJson';
 
@@ -52,6 +48,10 @@ class AndroidBuilder implements Builder {
       this.buildProfile.credentialsSource
     );
     this.credentials = await provider.getCredentialsAsync(credentialsSource);
+  }
+
+  public async configureProjectAsync(): Promise<void> {
+    // TODO: implement me
   }
 
   public async prepareJobAsync(archiveUrl: string): Promise<Job> {

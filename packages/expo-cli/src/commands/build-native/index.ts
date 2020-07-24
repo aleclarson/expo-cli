@@ -1,8 +1,7 @@
-import { Platform } from '@expo/build-tools';
 import { ApiV2 } from '@expo/xdl';
 import { Command } from 'commander';
 
-import { CredentialsSource, EasConfig, EasJsonReader } from '../../easJson';
+import { EasConfig, EasJsonReader } from '../../easJson';
 import log from '../../log';
 import { ensureProjectExistsAsync } from '../../projects';
 import {
@@ -13,7 +12,8 @@ import {
 } from './build';
 import AndroidBuilder from './AndroidBuilder';
 import iOSBuilder from './iOSBuilder';
-import { printBuildResults, printBuildTable, printLogsUrls } from './utils';
+import { ensureGitStatusIsCleanAsync } from './utils/git';
+import { printBuildResults, printLogsUrls } from './utils/misc';
 
 interface Options {
   platform: 'android' | 'ios' | 'all';
@@ -51,6 +51,9 @@ export async function buildAction(projectDir: string, options: Options): Promise
       )}, ${log.chalk.bold('all')}`
     );
   }
+
+  await ensureGitStatusIsCleanAsync();
+
   const easConfig: EasConfig = await new EasJsonReader(projectDir, platform).readAsync(profile);
   const ctx = await createBuilderContextAsync(projectDir, easConfig);
   const projectId = await ensureProjectExistsAsync(ctx.user, {
@@ -75,7 +78,7 @@ async function statusAction(projectDir: string): Promise<void> {
 }
 
 export default function (program: Command) {
-  const buildCmd = program
+  program
     .command('build [project-dir]')
     .description(
       'Build an app binary for your project, signed and ready for submission to the Google Play Store.'

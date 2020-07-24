@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import { v4 as uuidv4 } from 'uuid';
 
 import { EasConfig } from '../../easJson';
-import { makeProjectTarballAsync } from './utils';
+import { makeProjectTarballAsync } from './utils/git';
 import log from '../../log';
 import { UploadType, uploadAsync } from '../../uploads';
 import { createProgressTracker } from '../utils/progress';
@@ -40,6 +40,7 @@ export interface BuilderContext {
 export interface Builder {
   ctx: BuilderContext;
   ensureCredentialsAsync(): Promise<void>;
+  configureProjectAsync(): Promise<void>;
   prepareJobAsync(archiveUrl: string): Promise<Job>;
 }
 
@@ -70,6 +71,7 @@ export async function startBuildAsync(
   const tarPath = path.join(os.tmpdir(), `${uuidv4()}.tar.gz`);
   try {
     await builder.ensureCredentialsAsync();
+    await builder.configureProjectAsync();
 
     const fileSize = await makeProjectTarballAsync(tarPath);
 
